@@ -2,11 +2,11 @@
 Passive Web Vulnerability Detection Tool
 
 ## How it works
-- Bystander is a chrome extension which monitors the network requests and detect the potential web vulnerabilities all on user's browser. So, browse as usual and bystander will notify you if it detects any potential web vulnerabilities.
+- Bystander is a chrome extension which monitors the network request and detect the potential web vulnerabilities, all on the user's browser. So, browse as usual and bystander will notify you if it detects any potential web vulnerabilities.
 
 ## What it can do
 - Detect Actual Web Vulnerabilities like Open Redirect, CSRF, Clickjacking, etc.
-- Detect the Potential Code Sink like XSS, SSTI, SSI etc.
+- Detect Potential Code Sink's like XSS, SSTI, SSI etc.
 - Detect API token leakage
 - Detect Other Important PII leakage like Credit Card Number, Hash disclosure, etc.
 - Look for Insights like staging domain, admin dashboard in frontend code and network traffic.
