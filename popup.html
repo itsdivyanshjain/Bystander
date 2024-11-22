@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Alerts</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            width: 300px;
+            padding: 10px;
+        }
+        h1 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        #alertList {
+            list-style-type: none;
+            padding: 0;
+        }
+        .alert-item {
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            position: relative;
+        }
+        
+        .alert-item p {
+            margin: 5px 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            /* display: flex;
+            align-items: center;
+            justify-content: space-between; */
+        }
+        .severity-Critical {
+            border-left: 5px solid #ff4444;
+        }
+        .severity-High {
+            border-left: 5px solid #e7640c;
+        }
+        .severity-Medium {
+            border-left: 5px solid #ffbb33;
+        }
+        .severity-Low {
+            border-left: 5px solid #00C851;
+        }
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #testing-mode {
+            position: absolute;
+            top: 30px;
+            right: 10px;
+            display: flex;
+            align-items: center;
+        }
+        #testing-mode-text {
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .testing-mode-toggle-off {
+            background-color: #ff4444; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            width: 40px; 
+            height: 20px; 
+            font-size: 12px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            padding: 0 5px;
+        }
+        .testing-mode-toggle-on {
+            background-color: #00C851; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            width: 40px; 
+            height: 20px; 
+            font-size: 12px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            padding: 0 5px;
+        }
+    </style>
+    <script src="popup.js"></script>
+</head>
+<body>
+    <h1>Bystander</h1>
+    <div id="testing-mode"><span id="testing-mode-text">Testing Mode: </span><br></div>
+    <ul id="alertList"></ul>
+</body>
+</html>

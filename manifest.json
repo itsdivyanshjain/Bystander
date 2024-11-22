@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Bystander",
+  "version": "1.0",
+  "description": "Passive Web Vulnerability Detection Tool",
+  "permissions": ["storage", "webRequest", "activeTab", "tabs", "scripting"],
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "run_at": "document_start",
+      "js": ["content.js", "acorn_interpreter.js"],
+      "all_frames": true
+    }
+  ],
+  "host_permissions": ["<all_urls>"],
+  "web_accessible_resources": [
+    {
+      "resources": ["injected.js", "alert.js", "acorn_interpreter.js"],
+      "matches": ["*://*/*"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
