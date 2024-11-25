@@ -2,6 +2,8 @@ let httpObjectList = [];
 let oldHttpObject = [];
 let alreadySentHttpObject = [];
 
+console.log("injected.js loaded");
+
 (function(xhr) {
 
     var XHR = XMLHttpRequest.prototype;
@@ -147,8 +149,8 @@ setInterval(() => {
         }
     }
     oldHttpObject = httpObjectList.slice(0,maxIteration);
-}, 5000)
+}, 30000)
 
 setInterval(() => {
     alreadySentHttpObject = [];
-}, 60000)
+}, 120000)
