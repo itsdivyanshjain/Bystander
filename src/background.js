@@ -1,4 +1,5 @@
 import alertJson from './alert.js';
+import Interpreter from './acorn_interpreter.js';
 let testingMode = false;
 let alerts = [];
 let httpDetails = {};
@@ -16,6 +17,175 @@ async function getLocalStorageValue(key) {
         });
     });
 }
+
+function encodeRFC3986URIComponent(str) {
+    return encodeURIComponent(str).replace(
+      /[!'()*]/g,
+      (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`,
+    );
+  }
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function evaluateCondition(alertName, condition, httpObject) {
+    console.log("hello");
+
+    var evalSequence = new Interpreter('');
+    evalSequence.REGEXP_MODE = 1;
+
+    //url
+    let encodedUrl = encodeRFC3986URIComponent(httpObject.url);
+    evalSequence.appendCode(`requestUrl = '${encodedUrl}'`)
+    evalSequence.appendCode(`requestUrl = decodeURIComponent(requestUrl);`)
+    // method
+    evalSequence.appendCode(`requestMethod = '${httpObject.method}'`)
+
+    // requestHeader
+    let requestHeadersString = "";
+    if (typeof httpObject.requestHeaders == Object) {
+        Object.keys(httpObject.requestHeaders).forEach(requestId => {
+            try {
+                requestHeadersString += requestId + ": " +httpObject.requestHeaders[requestId] + "\n"
+            } catch {
+                return;
+            }
+        })
+    } else {
+        requestHeadersString += "";
+    }
+    requestHeadersString = encodeRFC3986URIComponent(requestHeadersString);
+    evalSequence.appendCode(`requestHeaders = '${requestHeadersString}'`)
+    evalSequence.appendCode(`requestHeaders = decodeURIComponent(requestHeaders);`)
+
+    // requestBody
+    let encodedRequestBody = encodeRFC3986URIComponent(httpObject.requestBody);
+    evalSequence.appendCode(`requestBody = '${encodedRequestBody}'`)
+    evalSequence.appendCode(`requestBody = decodeURIComponent(requestBody);`)
+
+    // responseHeader
+    let responseHeadersString = "";
+    if (typeof httpObject.responseHeaders == Object) {
+        Object.keys(httpObject.responseHeaders).forEach(responseId => {
+            try {
+                responseHeadersString += responseId + ": " +httpObject.responseHeaders[responseId] + "\n"
+            } catch {
+                return;
+            }
+        })
+    } else {
+        responseHeadersString += "";
+    }
+    responseHeadersString = encodeRFC3986URIComponent(responseHeadersString);
+    evalSequence.appendCode(`responseHeaders = '${responseHeadersString}'`)
+    evalSequence.appendCode(`responseHeaders = decodeURIComponent(responseHeaders);`)
+
+    // responseBody
+    let encodedResponseBody = encodeRFC3986URIComponent(httpObject.responseBody);
+    evalSequence.appendCode(`responseBody = '${encodedResponseBody}'`)
+    evalSequence.appendCode(`responseBody = decodeURIComponent(responseBody);`)
+    //evalSequence.appendCode(`[requestUrl, requestHeaders]`)
+
+    // evalSequence.run()
+    // console.log(evalSequence.value)
+    // console.log(evalSequence.getStatus())
+    
+
+    let prepared_code = condition.check;
+
+    for (let variable in condition.variables){
+        if (condition.variables[variable].startsWith("/")) {
+            let flags_split = condition.variables[variable].split("/")
+            let flags = flags_split.pop();
+            let finalVariable = flags_split.join("/").slice(1)
+            evalSequence.appendCode(`${variable} = '${encodeRFC3986URIComponent(finalVariable)}';`)
+            evalSequence.appendCode(`${variable} = new RegExp(decodeURIComponent(${variable}), '${flags}');`)
+            // prepared_code = prepared_code.replaceAll(variable, condition.variables[variable]);
+        } else {
+            evalSequence.appendCode(`${variable} = '${encodeRFC3986URIComponent(condition.variables[variable])}';`)
+            evalSequence.appendCode(`${variable} = new RegExp(decodeURIComponent(${variable}), 'gm');`)
+        }
+    }
+
+    console.log("prepared_code: ", prepared_code)
+
+    evalSequence.appendCode(`${prepared_code};`)
+    evalSequence.run();
+    while (true) {
+        evalSequence.step()
+        console.log("ok")
+
+        if (!evalSequence.step()) {
+            break
+        }
+        await sleep(10)
+    }
+    
+
+    let isAlert = evalSequence.value
+    console.log("isAlert: ", isAlert)
+    console.log("alertName: ", alertName)
+    // evalSequence.appendCode(`keywords.test(responseBody)`)
+    // while (true) {
+    //     evalSequence.step()
+    //     console.log("ok")
+
+    //     if (!evalSequence.step()) {
+    //         break
+    //     }
+    //     await sleep(10)
+
+    // }
+    // evalSequence.run()
+    console.log("keywords: ", evalSequence.value)
+    console.log("alertName: ", alertName)
+    console.log(httpObject)
+    
+    if (isAlert){
+        let keywordRegex = condition.variables["keywords"].startsWith("/") ? condition.variables["keywords"] : "/" + condition.variables["keywords"] + "/gm";
+        let keywordsVariables = prepared_code.split(" ");
+        let contextRegex =  /keywords\.test\((\w+)\)/gm;
+        for (let keyword_variable of keywordsVariables){
+            console.log("keyword_variable: ", keyword_variable)
+            
+            let context = contextRegex.exec(keyword_variable);
+            console.log("context: ", context)
+            if (context){
+                console.log("First group: ", context[1]);
+                // evalSequence.appendCode(context[1] + ".match(" + keywordRegex + ")")
+                evalSequence.appendCode(context[1] + ".match(" + keywordRegex + ")") //responseBody.match(new RegExp(firstGroup))[0];
+                evalSequence.run();
+                while (true) {
+                    evalSequence.step()
+                    console.log("ok")
+            
+                    if (!evalSequence.step()) {
+                        break
+                    }
+                    await sleep(10)
+            
+                }
+                let evidence = evalSequence.value
+                console.log("Evidence: ", evidence);
+                if (!evalSequence.run() && evidence){
+                    console.log("sending alert: ", evidence["h"][0])
+                    handleAlert({
+                        "alertName": alertName, 
+                        "evidence": evidence["h"][0],
+                        "severity": condition.severity,
+                        "context": context[1],
+                        "url": httpObject.url,
+                        "timestamp": new Date().toISOString()
+                    })
+                    break;
+                }
+            }
+        }
+    }
+}
+
+
 
 // Optimized function to process HTTP objects
 async function processHttpObject(httpObject) {
@@ -65,51 +235,15 @@ async function processHttpObject(httpObject) {
             continue;
         }
 
-        validAlertName.push(alertName);
-
+        evaluateCondition(alertName, condition, httpObject);
     }
-
-    let [activeTab, activeHttpObject] = await getActiveTab(httpObject); 
-
-    for (const index in validAlertName) {
-        let alertName = validAlertName[index];
-        // Every this it will create stack entry automatically so that previous entry won't be forgotten  
-        console.log("activeTab: ", activeTab);
-        console.log("activeHttpObject: ", activeHttpObject);
-        let condition = alertJson[alertName];
-        if (!activeTab) return;
-
-        console.log("sending ", alertName);
-        chrome.tabs.sendMessage(activeTab.tabId, {
-            messageType: 'evaluateCondition',
-            alertName: alertName,
-            condition: condition,
-            httpObject: activeHttpObject
-        });
-    }
-}
-
-// Function to get the active tab
-function getActiveTab(httpObject) {
-    return new Promise((resolve) => {
-      chrome.tabs.onActivated.addListener(function getThatTab(tab) {
-            chrome.tabs.onActivated.removeListener(getThatTab);
-            httpDetails = {};
-            alreadySentHttpDetails = [];
-            resolve([tab, httpObject]);
-        });
-    });
 }
 
 // Main function to handle incoming messages
 chrome.runtime.onMessage.addListener(async (message) => {
     if (message.messageType === 'httpObject') {
         console.log("httpObject received: ", JSON.stringify(message));
-        await processHttpObject(message.httpObject);
-    }
-    if (message.messageType === 'alert') {
-        console.log('Alert received:', message);
-        await handleAlert(message.alert);
+        processHttpObject(message.httpObject);
     }
 });
 
@@ -229,7 +363,8 @@ setInterval(() => {
         if (alreadySentHttpDetails.includes(requestId)) return; 
         if (httpDetails[requestId].hasOwnProperty("requestBody") && httpDetails[requestId].hasOwnProperty("responseBody") && httpDetails[requestId].hasOwnProperty("requestHeaders") && httpDetails[requestId].hasOwnProperty("responseHeaders")) {
             alreadySentHttpDetails.push(requestId);
-            await processHttpObject(httpDetails[requestId])
+            processHttpObject(httpDetails[requestId])
         };
     })
-}, 5000);
+    httpDetails = {};
+}, 15000);

@@ -8,14 +8,14 @@
     {
       "matches": ["*://*/*"],
       "run_at": "document_start",
-      "js": ["src/content.js", "src/acorn_interpreter.js"],
+      "js": ["src/content.js"],
       "all_frames": true
     }
   ],
   "host_permissions": ["<all_urls>"],
   "web_accessible_resources": [
     {
-      "resources": ["src/injected.js", "src/alert.js", "src/acorn_interpreter.js"],
+      "resources": ["src/injected.js"],
       "matches": ["*://*/*"]
     }
   ],
