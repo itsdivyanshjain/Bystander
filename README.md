@@ -1,5 +1,8 @@
-# Bystander
-Passive Web Vulnerability Detection Tool
+
+
+
+<h1 align="center" id="welcome">Bystander: Passive Web Vulnerability Detection Tool<h1>
+<p align="center"><img width="337" alt="demo" src="https://github.com/user-attachments/assets/42a22b8e-a8da-40d7-b65f-275c09ec5484" /><br></p>
 
 ## How it works
 - Bystander is a chrome extension which monitors the network request and detect the potential web vulnerabilities, all on the user's browser. So, browse as usual and bystander will notify you if it detects any potential web vulnerabilities.
