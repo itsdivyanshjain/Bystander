@@ -24,6 +24,7 @@
     "type": "module"
   },
   "action": {
-    "default_popup": "src/popup.html"
+    "default_popup": "src/popup.html",
+    "default_icon": "src/icon.png"
   }
 }
