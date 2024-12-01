@@ -26,6 +26,6 @@
 - Add your own rules: You can add your own rules to detect other passive vulnerabilities, insights, pii leakage, etc. Just require to edit in `alert.js` file.
 
 ## Warning
-- This is still under development not even alpha version. So, there might be some bugs as well as false positives and negatives.
+- There might be some bugs as well as false positives and negatives.
 - If browser is getting crashed/hang after installing the extension, you can disable for time being until it's optimized.
-- Severity of the alerts are tentative and it's meant as a weight of the alert but doesn't mean it's actually high/medium/low severity vulnerability.
+- Severity of the alerts are tentative and those are meant as a weight of the alert but doesn't mean it's actually high/medium/low severity vulnerability.
