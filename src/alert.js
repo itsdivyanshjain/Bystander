@@ -6,6 +6,7 @@ const alertJson = {
         "check": "keywords.test(requestBody) || keywords.test(requestUrl)",
         "severity": "Medium",
         "detectDuringTesting": false, // default is true
+        "include": ["html", "json"]
     },
     "Possible Sink - SSTI":{ // Tested
         "variables": {
@@ -14,6 +15,7 @@ const alertJson = {
         "check": "keywords.test(requestBody) || keywords.test(requestUrl)",
         "severity": "Medium",
         "detectDuringTesting": false,
+        "include": ["html", "json"]
     },
     "Possible Sink - LFI in query params": { // Tested
         "variables": {
@@ -22,39 +24,49 @@ const alertJson = {
         "check": "keywords.test(requestUrl)",
         "severity": "Medium",
         "detectDuringTesting": true,
+        "include": ["html", "json"]
     },
     "Possible Sink - SSI (in any input field)":{
         "variables": {
-            "keywords": "/Surrogate-Control:\\s+content=\"ESI/1\\.0\"/igm"
+            "keywords": "/Surrogate-Control:\\s+content=\"ESI\\/1\\.0/gim"
         },
         "check": "keywords.test(responseHeaders)",
         "severity": "Medium",
         "detectDuringTesting": true,
+        "include": ["html", "json"]
     },
-    "Possible Insight - Staging Domain": {
-        "variables": {
-            "keywords": "(?!www\\.)([^.]+\\.)*[^.]+\\.[a-zA-Z]{2,}" // subdomain regex
-        },
-        "check": "keywords.test(responseBody) && keywords.test(new RegExp('staging|stg|dev|development|pre-?prod', 'igm'))",
-        "severity": "Medium",
-    },
-    "Possible Insight - Admin Dashboard": {
-        "variables": {
-            "keywords": "(?!www\\.)([^.]+\\.)*[^.]+\\.[a-zA-Z]{2,}"
-        },
-        "check": "keywords.test(responseBody) && keywords.test(new RegExp('admin|adm|devops', 'igm'))",
-        "severity": "Medium",
-    },
-    // "Possible Detection - ClickJacking" : {
+    // "Possible Sink - Client Side Path Traversal":{
     //     "variables": {
-    //         "keywords": "x-frame-options|content-security-policy.*frame-"
+    //         "keywords": "/\\.\\.\\//igm"
     //     },
-    //     "alertOncePerHost": true,
-    //     "check": "keywords.test(responseHeaders)",
+    //     "check": "keywords.test(requestUrl)",
     //     "severity": "Medium",
-    //     "include": ["html"]
     // },
-    "Possible Detection - Polyfill takeover": {
+    "Insight - Staging Domain": {
+        "variables": {
+            "keywords": "/\\b(\\w+-?dev|stg|staging|gitlab)((?!-)[A-Za-z0-9-]{0,63}(?<!-)\\.){2,}[A-Za-z]{2,6}\\b/igm" // subdomain regex
+        },
+        "check": "keywords.test(responseBody)",
+        "severity": "Medium",
+    },
+    "Insight - Admin Domain": {
+        "variables": {
+            "keywords": "/\\b(\\w+-?admin|devops)((?!-)[A-Za-z0-9-]{0,63}(?<!-)\\.){2,}[A-Za-z]{2,6}\\b/igm" // subdomain regex
+        },
+        "check": "keywords.test(responseBody)",
+        "severity": "Medium",
+    },
+    // "Insight - Possible response manipulation": {},
+    "Possible Detection - ClickJacking" : {
+        "variables": {
+            "keywords": "/x-frame-options|content-security-policy.*frame-ancestors/igm"
+        },
+        "alertOncePerHost": true,
+        "check": "!keywords.test(responseHeaders)",
+        "severity": "Medium",
+        "include": ["html"]
+    },
+    "Possible Detection - Script Served From Malicious Domain (polyfill)": {
         "variables": {
             "keywords": "script src=\"?http[s]?://.*(polyfill\\.io|bootcdn\\.net|bootcss\\.com|staticfile\\.net|staticfile\\.org|unionadjs\\.com|xhsbpza\\.com|union\\.macoms\\.la|newcrbpc\\.com).*"
         },
@@ -73,6 +85,14 @@ const alertJson = {
         "severity": "High",
         "include": ["html"]
     },
+    // "Possible Detection - Open Redirect (DOM based)": {
+    //     "variables": {
+    //         "keywords": "window\\.location\\.href"
+    //     },
+    //     "check": "keywords.test(responseBody)",
+    //     "severity": "High",
+    //     "include": ["html"]
+    // },
     // "PII Leak - Mastercard":{
     //     "variables": {
     //         "keywords": "5[1-5][0-9]{14}"
@@ -118,253 +138,304 @@ const alertJson = {
             "keywords": "-----BEGIN RSA PRIVATE KEY-----"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "High"
+        "severity": "High",
+        "include": ["html", "json"]
     },
     "Private Key Disclosure - SSH (DSA)":{
         "variables": {
             "keywords": "-----BEGIN DSA PRIVATE KEY-----"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "High"
+        "severity": "High",
+        "include": ["html", "json"]
     },
     "Private Key Disclosure - PGP":{
         "variables": {
             "keywords": "-----BEGIN PGP PRIVATE KEY-----"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "High"
+        "severity": "High",
+        "include": ["html", "json"]
     },
     "Private Key Disclosure - SSH (ECDSA)":{
         "variables": {
             "keywords": "-----BEGIN ECDSA PRIVATE KEY-----"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "High"
+        "severity": "High",
+        "include": ["html", "json"]
     },
     "HASH Disclosure - Lanman / DES":{
         "variables": {
             "keywords": "\\$LM\\$[a-f0-9]{16}"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "High"
+        "severity": "High",
+        "include": ["html", "json"]
     },
     "HASH Disclosure - Kerberos AFS DES":{
         "variables": {
             "keywords": "\\$K4\\$[a-f0-9]{16}"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "High"
+        "severity": "High",
+        "include": ["html", "json"]
     },
     "HASH Disclosure - OPENBSD BLOWFISH":{
         "variables": {
             "keywords": "\\$2[abxy]\\$05\\$[a-zA-z0-9\\+\\-_./=]{53}"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "High"
+        "severity": "High",
+        "include": ["html", "json"]
     },
     "HASH Disclosure - BCRYPT":{
         "variables": {
             "keywords": "\\$2a?\\$[0-9]{2}\\$[./0-9A-Za-z]{53}"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "High"
+        "severity": "High",
+        "include": ["html", "json"]
     },
     "HASH Disclosure - SCRYPT":{
         "variables": {
             "keywords": "\\$2a?\\$[0-9]{2}\\$[./0-9A-Za-z]{53}"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "High"
+        "severity": "High",
+        "include": ["html", "json"]
     },
-    "HASH Disclosure - Argon2":{
-        "variables": {
-            "keywords": "\\$2a?\\$[0-9]{2}\\$[./0-9A-Za-z]{53}" // TODO:
-        },
-        "check": "keywords.test(responseBody)",
-        "severity": "High"
-    },
+    // "HASH Disclosure - Argon2":{
+    //     "variables": {
+    //         "keywords": "\\$2a?\\$[0-9]{2}\\$[./0-9A-Za-z]{53}" // TODO:
+    //     },
+    //     "check": "keywords.test(responseBody)",
+    //     "severity": "High"
+    // },
     "HASH Disclosure - Argon2i":{
         "variables": {
-            "keywords": "\\$2a?\\$[0-9]{2}\\$[./0-9A-Za-z]{53}" // TODO:
+            "keywords": "^\\$argon2i\\$v=(?:16|19)\\$m=\\d{1,10},t=\\d{1,10},p=\\d{1,3}(?:,keyid=[A-Za-z0-9+/]{0,11}(?:,data=[A-Za-z0-9+/]{0,43})?)?\\$[A-Za-z0-9+/]{11,64}\\$[A-Za-z0-9+/]{16,86}$" // TODO:
         },
         "check": "keywords.test(responseBody)",
-        "severity": "High"
+        "severity": "High",
+        "include": ["html", "json"]
+    },
+    "HASH Disclosure - Argon2id":{
+        "variables": {
+            "keywords": "^\\$argon2id\\$v=(?:16|19)\\$m=\\d{1,10},t=\\d{1,10},p=\\d{1,3}(?:,keyid=[A-Za-z0-9+/]{0,11}(?:,data=[A-Za-z0-9+/]{0,43})?)?\\$[A-Za-z0-9+/]{11,64}\\$[A-Za-z0-9+/]{16,86}$" // TODO:
+        },
+        "check": "keywords.test(responseBody)",
+        "severity": "High",
+        "include": ["html", "json"]
     },
     "HASH Disclosure - NTLM old":{
         "variables": {
             "keywords": "\\$3\\$\\$[0-9a-f]{32}"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "High"
+        "severity": "High",
+        "include": ["html", "json"]
     },
     "HASH Disclosure - NTLM new":{
         "variables": {
             "keywords": "\\$NT\\$[0-9a-f]{32}"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "High"
+        "severity": "High",
+        "include": ["html", "json"]
     },
     "AI API Key Disclosure - CHATGPT":{ // Tested
         "variables": {
-            "keywords": "sk-[0-9a-zA-Z]{48}"
+            "keywords": "\\bsk-[0-9a-zA-Z]{48}\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "AI API Key Disclosure - Hugging Face":{
         "variables": {
-            "keywords": "hf_[0-9a-zA-Z]{34,}"
+            "keywords": "\\bhf_[0-9a-zA-Z]{34,}\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - Slack":{
         "variables": {
-            "keywords": "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})"
+            "keywords": "\\b(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - Amazon MWS":{
         "variables": {
-            "keywords": "amzn\\.mws\\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+            "keywords": "\\bamzn\\.mws\\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - AWS AppSync":{
         "variables": {
             "keywords": "x-amz-date|x-amz-security-token|x-amz-target|x-amz-content-sha256|x-amz-decoded-content-length|x-amz-user-agent|x-amz-user-agent-info|x-amz-user-agent-version|x-amz-user-agent-platform|x-amz-user-agent-device|x-amz-user-agent-browser|x-amz-user-agent-os|x-amz-user-agent-cpu|x-amz-user-agent-memory|x-amz-user-agent-storage|x-amz-user-agent-network|x-amz-user-agent-gpu"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - Facebook Access Token":{
         "variables": {
-            "keywords": "EAACEdEose0cBA[0-9A-Za-z]+"
+            "keywords": "\\bEAACEdEose0cBA[0-9A-Za-z]+\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - Facebook Oauth Token":{
         "variables": {
-            "keywords": "[fF][aA][cC][eE][bB][oO][oO][kK].{0,20}['|\"][0-9a-f]{32}['|\"]"
+            "keywords": "\\b[fF][aA][cC][eE][bB][oO][oO][kK].{0,20}['|\"][0-9a-f]{32}['|\"]\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - Github":{
         "variables": {
-            "keywords": "[gG][iI][tT][hH][uU][bB].{0,20}['|\"][0-9a-zA-Z]{35,40}['|\"]"
+            "keywords": "\\b[gG][iI][tT][hH][uU][bB].{0,20}['|\"][0-9a-zA-Z]{35,40}['|\"]\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
-    "API Key Disclosure - Google (GCP) Service Account":{
-        "variables": {
-            "keywords": "\"type\": \"service_account\""
-        },
-        "check": "keywords.test(responseBody)",
-        "severity": "Medium"
-    },
+    // "API Key Disclosure - Google (GCP) Service Account":{
+    //     "variables": {
+    //         "keywords": "\"type\": \"service_account\""
+    //     },
+    //     "check": "keywords.test(responseBody)",
+    //     "severity": "Medium",
+    //     "include": ["js"]
+    // },
     "API Key Disclosure - Heroku":{
         "variables": {
-            "keywords": "[hH][eE][rR][oO][kK][uU].{0,20}[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}"
+            "keywords": "\\b[hH][eE][rR][oO][kK][uU].{0,20}[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - Mailchimp":{
         "variables": {
-            "keywords": "[0-9a-f]{32}-us[0-9]{1,2}"
+            "keywords": "\\b[0-9a-f]{32}-us[0-9]{1,2}\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - Mailgun":{
         "variables": {
-            "keywords": "key-[0-9a-zA-Z]{32}"
+            "keywords": "\\bkey-[0-9a-zA-Z]{32}\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - Paypal Braintree Access Token":{
         "variables": {
-            "keywords": "access_token\\$production\\$[0-9a-z]{16}\\$[0-9a-f]{32}"
+            "keywords": "\\baccess_token\\$production\\$[0-9a-z]{16}\\$[0-9a-f]{32}\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - Picatic":{
         "variables": {
-            "keywords": "sk_live_[0-9a-z]{32}"
+            "keywords": "\\bsk_live_[0-9a-z]{32}\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - Slack webhook":{ // TODO: need to improve this
         "variables": {
             "keywords": "https://hooks\\.slack\\.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - Stripe":{
         "variables": {
-            "keywords": "sk_live_[0-9a-z]{24}"
+            "keywords": "\\bsk_live_[0-9a-z]{24}\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - Stripe Restricted":{
         "variables": {
-            "keywords": "rk_live_[0-9a-z]{24}"
+            "keywords": "\\brk_live_[0-9a-z]{24}\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - Square Access Token":{
         "variables": {
-            "keywords": "sq0atp-[0-9A-Za-z\\-_]{22}"
+            "keywords": "\\bsq0atp-[0-9A-Za-z\\-_]{22}\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - Square OAuth Secret":{
         "variables": {
-            "keywords": "sq0csp-[0-9A-Za-z\\-_]{43}"
+            "keywords": "\\bsq0csp-[0-9A-Za-z\\-_]{43}\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - Telegram Bot Token":{
         "variables": {
-            "keywords": "T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}"
+            "keywords": "\\bT[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - Twilio":{
         "variables": {
-            "keywords": "SK[a-zA-Z0-9_]{32}"
+            "keywords": "\\bSK[a-zA-Z0-9_]{32}\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - Github Auth Creds":{
         "variables": {
             "keywords": "https:\\/\\/[a-zA-Z0-9]{40}@github\\.com"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
+        "severity": "Critical",
+        "include": ["js"]
     },
     "API Key Disclosure - AWS":{
         "variables": {
-            "keywords": "((?:A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16})"
+            "keywords": "\\b((?:A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16})\\b"
         },
         "check": "keywords.test(responseBody)",
-        "severity": "Critical"
-    }
+        "severity": "Critical",
+        "include": ["js"]
+    },
+    // "Other Leak - S3 Bucket Url":{
+    //     "variables": {
+    //         "keywords": "/((s3:\\[a-zA-Z0-9-\.\\_]+)|((s3-|s3\.)?(.*)\.amazonaws\.com))/g",
+    //         "skip_if_header_contains": "/image/png|image/jpeg|image/gif|image/webp|application/pdf|application/x-shockwave-flash/igm"
+    //     },
+    //     "check": "keywords.test(responseBody) && !skip_if_header_contains.test(responseHeaders)",
+    //     "severity": "Critical"
+    // }
 }
 
 export default alertJson;
