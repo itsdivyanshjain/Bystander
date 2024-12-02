@@ -19,7 +19,7 @@ const alertJson = {
     },
     "Possible Sink - LFI in query params": { // Tested
         "variables": {
-            "keywords": "(\\?|&)(file|filename|path|dir|folder|log|config|backup|etc|temp|cache|template|include|source|document|root|upload|backup|config|database|storage|configuration|storage|backup|config|database|storage|configuration|storage|backup|config|database|storage|configuration|storage)="
+            "keywords": "(\\?|&)(file|filename|path|dir|folder|log|config|backup|temp|cache|template|include|source|document|root|upload)="
         },
         "check": "keywords.test(requestUrl)",
         "severity": "Medium",
@@ -44,17 +44,19 @@ const alertJson = {
     // },
     "Insight - Staging Domain": {
         "variables": {
-            "keywords": "/\\b(\\w+-?dev|stg|staging|gitlab)((?!-)[A-Za-z0-9-]{0,63}(?<!-)\\.){2,}[A-Za-z]{2,6}\\b/igm" // subdomain regex
+            "keywords": "/\\b(\\w+-?development|stg|staging|gitlab)((?!-)[A-Za-z0-9-]{0,63}(?<!-)\\.){2,}[A-Za-z]{2,6}\\b/igm" // subdomain regex
         },
-        "check": "keywords.test(responseBody)",
+        "check": "keywords.test(responseBody) && !keywords.test(requestUrl)",
         "severity": "Medium",
+        "include": ["html","js"]
     },
     "Insight - Admin Domain": {
         "variables": {
             "keywords": "/\\b(\\w+-?admin|devops)((?!-)[A-Za-z0-9-]{0,63}(?<!-)\\.){2,}[A-Za-z]{2,6}\\b/igm" // subdomain regex
         },
-        "check": "keywords.test(responseBody)",
+        "check": "keywords.test(responseBody) && !keywords.test(requestUrl)",
         "severity": "Medium",
+        "include": ["html","js"]
     },
     // "Insight - Possible response manipulation": {},
     "Possible Detection - ClickJacking" : {
@@ -250,7 +252,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html","js"]
     },
     "AI API Key Disclosure - Hugging Face":{
         "variables": {
@@ -258,7 +260,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - Slack":{
         "variables": {
@@ -266,7 +268,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - Amazon MWS":{
         "variables": {
@@ -274,7 +276,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - AWS AppSync":{
         "variables": {
@@ -282,7 +284,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - Facebook Access Token":{
         "variables": {
@@ -290,7 +292,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - Facebook Oauth Token":{
         "variables": {
@@ -298,7 +300,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - Github":{
         "variables": {
@@ -306,7 +308,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     // "API Key Disclosure - Google (GCP) Service Account":{
     //     "variables": {
@@ -322,7 +324,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - Mailchimp":{
         "variables": {
@@ -330,7 +332,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - Mailgun":{
         "variables": {
@@ -338,7 +340,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - Paypal Braintree Access Token":{
         "variables": {
@@ -346,7 +348,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - Picatic":{
         "variables": {
@@ -354,7 +356,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - Slack webhook":{ // TODO: need to improve this
         "variables": {
@@ -362,7 +364,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - Stripe":{
         "variables": {
@@ -370,7 +372,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - Stripe Restricted":{
         "variables": {
@@ -378,7 +380,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - Square Access Token":{
         "variables": {
@@ -386,7 +388,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - Square OAuth Secret":{
         "variables": {
@@ -394,7 +396,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - Telegram Bot Token":{
         "variables": {
@@ -402,7 +404,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - Twilio":{
         "variables": {
@@ -410,7 +412,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - Github Auth Creds":{
         "variables": {
@@ -418,7 +420,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     "API Key Disclosure - AWS":{
         "variables": {
@@ -426,7 +428,7 @@ const alertJson = {
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
-        "include": ["js"]
+        "include": ["html", "js"]
     },
     // "Other Leak - S3 Bucket Url":{
     //     "variables": {
