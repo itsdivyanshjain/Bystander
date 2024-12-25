@@ -5,6 +5,9 @@ let alerts = [];
 let httpDetails = {};
 let alreadySentHttpDetails = [];
 
+var evalSequence = new Interpreter('');
+evalSequence.REGEXP_MODE = 1;
+
 // Function to get local storage values
 async function getLocalStorageValue(key) {
     return new Promise((resolve) => {
@@ -30,61 +33,7 @@ function sleep(ms) {
 }
 
 async function evaluateCondition(alertName, condition, httpObject) {
-    console.log("hello");
-
-    var evalSequence = new Interpreter('');
-    evalSequence.REGEXP_MODE = 1;
-
-    //url
-    let encodedUrl = encodeRFC3986URIComponent(httpObject.url);
-    evalSequence.appendCode(`requestUrl = '${encodedUrl}'`)
-    evalSequence.appendCode(`requestUrl = decodeURIComponent(requestUrl);`)
-    // method
-    evalSequence.appendCode(`requestMethod = '${httpObject.method}'`)
-
-    // requestHeader
-    let requestHeadersString = "";
-    if (typeof httpObject.requestHeaders == Object) {
-        Object.keys(httpObject.requestHeaders).forEach(requestId => {
-            try {
-                requestHeadersString += requestId + ": " +httpObject.requestHeaders[requestId] + "\n"
-            } catch {
-                return;
-            }
-        })
-    } else {
-        requestHeadersString += "";
-    }
-    requestHeadersString = encodeRFC3986URIComponent(requestHeadersString);
-    evalSequence.appendCode(`requestHeaders = '${requestHeadersString}'`)
-    evalSequence.appendCode(`requestHeaders = decodeURIComponent(requestHeaders);`)
-
-    // requestBody
-    let encodedRequestBody = encodeRFC3986URIComponent(httpObject.requestBody);
-    evalSequence.appendCode(`requestBody = '${encodedRequestBody}'`)
-    evalSequence.appendCode(`requestBody = decodeURIComponent(requestBody);`)
-
-    // responseHeader
-    let responseHeadersString = "";
-    if (typeof httpObject.responseHeaders == Object) {
-        Object.keys(httpObject.responseHeaders).forEach(responseId => {
-            try {
-                responseHeadersString += responseId + ": " +httpObject.responseHeaders[responseId] + "\n"
-            } catch {
-                return;
-            }
-        })
-    } else {
-        responseHeadersString += "";
-    }
-    responseHeadersString = encodeRFC3986URIComponent(responseHeadersString);
-    evalSequence.appendCode(`responseHeaders = '${responseHeadersString}'`)
-    evalSequence.appendCode(`responseHeaders = decodeURIComponent(responseHeaders);`)
-
-    // responseBody
-    let encodedResponseBody = encodeRFC3986URIComponent(httpObject.responseBody);
-    evalSequence.appendCode(`responseBody = '${encodedResponseBody}'`)
-    evalSequence.appendCode(`responseBody = decodeURIComponent(responseBody);`)
+    
     //evalSequence.appendCode(`[requestUrl, requestHeaders]`)
 
     // evalSequence.run()
@@ -196,6 +145,61 @@ async function processHttpObject(httpObject) {
     testingMode = await getLocalStorageValue("testingMode")
 
     let validAlertName = [];
+    evalSequence = new Interpreter('');
+    evalSequence.REGEXP_MODE = 1;
+
+    console.log("hello");
+
+    //url
+    let encodedUrl = encodeRFC3986URIComponent(httpObject.url);
+    evalSequence.appendCode(`requestUrl = '${encodedUrl}'`)
+    evalSequence.appendCode(`requestUrl = decodeURIComponent(requestUrl);`)
+    // method
+    evalSequence.appendCode(`requestMethod = '${httpObject.method}'`)
+
+    // requestHeader
+    let requestHeadersString = "";
+    if (typeof httpObject.requestHeaders == Object) {
+        Object.keys(httpObject.requestHeaders).forEach(requestId => {
+            try {
+                requestHeadersString += requestId + ": " +httpObject.requestHeaders[requestId] + "\n"
+            } catch {
+                return;
+            }
+        })
+    } else {
+        requestHeadersString += "";
+    }
+    requestHeadersString = encodeRFC3986URIComponent(requestHeadersString);
+    evalSequence.appendCode(`requestHeaders = '${requestHeadersString}'`)
+    evalSequence.appendCode(`requestHeaders = decodeURIComponent(requestHeaders);`)
+
+    // requestBody
+    let encodedRequestBody = encodeRFC3986URIComponent(httpObject.requestBody);
+    evalSequence.appendCode(`requestBody = '${encodedRequestBody}'`)
+    evalSequence.appendCode(`requestBody = decodeURIComponent(requestBody);`)
+
+    // responseHeader
+    let responseHeadersString = "";
+    if (typeof httpObject.responseHeaders == Object) {
+        Object.keys(httpObject.responseHeaders).forEach(responseId => {
+            try {
+                responseHeadersString += responseId + ": " +httpObject.responseHeaders[responseId] + "\n"
+            } catch {
+                return;
+            }
+        })
+    } else {
+        responseHeadersString += "";
+    }
+    responseHeadersString = encodeRFC3986URIComponent(responseHeadersString);
+    evalSequence.appendCode(`responseHeaders = '${responseHeadersString}'`)
+    evalSequence.appendCode(`responseHeaders = decodeURIComponent(responseHeaders);`)
+
+    // responseBody
+    let encodedResponseBody = encodeRFC3986URIComponent(httpObject.responseBody);
+    evalSequence.appendCode(`responseBody = '${encodedResponseBody}'`)
+    evalSequence.appendCode(`responseBody = decodeURIComponent(responseBody);`)
 
     // pre checks
     for (const alertName in alertJson) {
