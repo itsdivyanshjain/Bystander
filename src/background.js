@@ -361,7 +361,9 @@ function parseRequestBody(details) {
 }
 
 // Periodically clean up old HTTP details
-setInterval(() => {
+setInterval(async () => {
+    alerts = await getLocalStorageValue('alerts');
+    chrome.action.setBadgeText({text: alerts.length.toString()});
     console.log("httpdetails int: ", httpDetails)
     Object.keys(httpDetails).forEach(async requestId => {
         if (alreadySentHttpDetails.includes(requestId)) return; 

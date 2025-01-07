@@ -35,6 +35,14 @@ const alertJson = {
         "detectDuringTesting": true,
         "include": ["html", "json"]
     },
+    "Possible Sink - Client Side Redirection (meta tag)": { // could be utilised for csrf (samsite attribute doesn't affect here) when reflected url is found 
+        "variables": {
+            "keywords": "/<meta http-equiv=.*refresh.*content=.*?>/igm"
+        },
+        "check": "keywords.test(responseBody)",
+        "severity": "Medium",
+        "include": ["html"]
+    },
     // "Possible Sink - Client Side Path Traversal":{
     //     "variables": {
     //         "keywords": "/\\.\\.\\//igm"
@@ -57,6 +65,14 @@ const alertJson = {
         "check": "keywords.test(responseBody) && !keywords.test(requestUrl)",
         "severity": "Medium",
         "include": ["html","js"]
+    },
+    "Insight - UUIDv1 still in use": {
+        "variables": {
+            "keywords": "/[0-9a-f]{8}-[0-9a-f]{4}-11e[0-9a-f]{1}-[0-9a-f]{4}-[0-9a-f]{12}/igm"
+        },
+        "check": "keywords.test(requestUrl) || keywords.test(requestBody) || keywords.test(responseBody)",
+        "severity": "Medium",
+        "include": ["html","json"]
     },
     // "Insight - Possible response manipulation": {},
     "Possible Detection - ClickJacking" : {
@@ -84,6 +100,28 @@ const alertJson = {
             "password_not_contains": "/pass/"
         },
         "check": "keywords.test(requestBody) && url_contains.test(requestUrl) && !token_not_contains(requestBody) && !password_not_contains(requestBody)",
+        "severity": "High",
+        "include": ["html"]
+    },
+    "Possible Detection - Oauth CSRF (state param missing)": {
+        "variables": {
+            "keywords": "/state=/igm",
+            "url_contains": "/oauth|authorize/igm",
+            "oauth_redirect_uri": "/redirect_uri=/igm",
+            "oauth_response_type": "/response_type=code/igm",
+            "oauth_client_id": "/client_id=/igm",
+        },
+        "check": "url_contains.test(requestUrl) && oauth_redirect_uri.test(requestUrl) && oauth_response_type.test(requestUrl) && oauth_client_id.test(requestUrl) && !keywords.test(requestUrl)",
+        "severity": "Low",
+        "include": ["html"]
+    },
+    "Possible Detection - Oauth Implicit Flow being Utilised": {
+        "variables": {
+            "keywords": "/response_type=(token|access_?-?token)/igm",
+            "url_contains": "oauth|authorize",
+            "oauth_redirect_uri": "redirect_uri=",
+        },
+        "check": "url_contains.test(requestUrl) && oauth_redirect_uri.test(requestUrl) && oauth_response_type.test(requestUrl) && !keywords.test(requestUrl)",
         "severity": "High",
         "include": ["html"]
     },
