@@ -36,4 +36,4 @@
 ## Warning
 - There might be some bugs as well as false positives and negatives.
 - If browser is getting crashed/hang after installing the extension, you can disable for time being until it's optimized.
-- Severity of the alerts are tentative and those are meant as a weight of the alert but doesn't mean it's actually high/medium/low severity vulnerability.
+- Severity of the alerts are tentative and those are meant as a weight of the alert but doesn't mean it's actually critical/high/medium/low severity vulnerability.

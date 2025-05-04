@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.4 - Pretty Good Alpha (2025-05-05)
+- Added new alert:  Possible Detection - Oauth CSRF (state param missing)
+- Added new alert:  Possible Detection - Oauth Implicit Flow being Utilised
+- Fix: broken regexes
+- Removed unwanted alerts
+- Implemented testcases for stability
+- Updated Contributing docs
+
 ## 0.0.3 - Usable Alpha (2025-01-07)
 - Added new alert - Possible Sink - Client Side Redirection (meta tag)
 - Added new alert - Possible Detection - Oauth Implicit Flow being Utilised
