@@ -48,3 +48,40 @@ const alertJson = {
     - `include` (optional): This is an array of strings, and it indicates the content types in which the rule should be applied. This range from `html`, `json`, `text`, `js`. Default is all.
     - `exclude` (optional): This is an array of strings, and it indicates the content types in which the rule should not be applied. This range from `html`, `json`, `text`, `js`. Default is none. Don't use simultaneously with `include` key.
 
+### Testing your own rules
+- After creating the rule, we require to test again certain check
+- Open "src/testcases.js" and you'll find object like below:
+```js
+    {
+        "id": 4,
+        "testcaseName": "Potential Detection - CSRF",
+        "http":{
+            "url": "https://stg.example.com/v1/oauth/users/settings?redirect_uri=https://google.com&response_type=code&client_id=1234567890",
+            "method": "POST",
+            "requestHeaders": `
+                "Authorization": "Bearer 1234567890"
+            `,
+            "requestBody": "email=test@example.com",
+            "responseHeaders": `
+                "Content-Type": "application/json"
+            `,
+            "responseBody": `
+                <html>
+                    <p>test@example.com</p>
+                </html>
+            `
+        },
+        "assert": [
+            "Possible Detection - CSRF on email change",
+            "Possible Detection - Oauth CSRF (state param missing)",
+        ]
+    }
+```
+- Each testcases having followin components:
+    - `id`: unique id representing each testcase.
+    - `testcaseName`: unique name representing each testcase.
+    - `http`: This block represent a sample request and response against we're expecting alert (or intentionally not an alert) which having following keys `url`,`method`,`requestHeaders`,`requestBody`,`responseHeaders`,`responseBody`.
+    - `assert`: This block represent Intended alert name.
+    - `notassert`: This block represent Intended not required alert name.
+- Note: if you're addind simple regex which test against response body you can check for example id:1 and try to add body in that id if possible, instead of creating whole new case.
+- To test the `alert.js` regexes and script, run the following command: `node src/runTest.js` (node as binary required)
