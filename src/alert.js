@@ -379,14 +379,14 @@ const alertJson = {
     //     "severity": "Medium",
     //     "include": ["js"]
     // },
-    "API Key Disclosure - Heroku":{
-        "variables": {
-            "keywords": "\\b([0-9Aa-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\\b"
-        },
-        "check": "keywords.test(responseBody)",
-        "severity": "Critical",
-        "include": ["html", "js"]
-    },
+    // "API Key Disclosure - Heroku":{
+    //     "variables": {
+    //         "keywords": "\\b([0-9Aa-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\\b"
+    //     },
+    //     "check": "keywords.test(responseBody)",
+    //     "severity": "Critical",
+    //     "include": ["html", "js"]
+    // },
     "API Key Disclosure - Mailchimp":{
         "variables": {
             "keywords": "\\b[0-9a-f]{32}-us[0-9]{1,2}\\b"

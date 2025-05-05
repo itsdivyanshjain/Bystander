@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.0.4.1 - Pretty Good Alpha (2025-05-05)
+- Removed unwanted alerts
+
 ## 0.0.4 - Pretty Good Alpha (2025-05-05)
 - Added new alert:  Possible Detection - Oauth CSRF (state param missing)
 - Added new alert:  Possible Detection - Oauth Implicit Flow being Utilised
