@@ -1,14 +1,14 @@
 const alertJson = {
-    "Possible Sink - NoSQL":{ // Tested
+    "Possible Sink - NoSQL":{
         "variables": {
-            "keywords": "\\$(filter|where|orderby|top|skip|count|search|format|select|expand|inlinecount|value|eq|ne|gt|lt|ge|le|and|or|not)"
+            "keywords": "\\$(filter|where|orderby|top|skip|count|search|format|select|expand|inlinecount|value|eq|ne|gt|lt|ge|le|and|or|not)\\b"
         },
         "check": "keywords.test(requestBody) || keywords.test(requestUrl)",
         "severity": "Medium",
         "detectDuringTesting": false, // default is true
         "include": ["html", "json"]
     },
-    "Possible Sink - SSTI":{ // Tested
+    "Possible Sink - SSTI":{
         "variables": {
             "keywords": "\\{\\{|\\$\\{|#\\{|@\\(|<%"
         },
@@ -17,7 +17,7 @@ const alertJson = {
         "detectDuringTesting": false,
         "include": ["html", "json"]
     },
-    "Possible Sink - LFI in query params": { // Tested
+    "Possible Sink - LFI in query params": {
         "variables": {
             "keywords": "(\\?|&)(file|filename|path|dir|folder|log|config|backup|temp|cache|template|include|source|document|root|upload)="
         },
@@ -86,7 +86,7 @@ const alertJson = {
     },
     "Possible Detection - Script Served From Malicious Domain (polyfill)": {
         "variables": {
-            "keywords": "script src=\"?http[s]?://.*(polyfill\\.io|bootcdn\\.net|bootcss\\.com|staticfile\\.net|staticfile\\.org|unionadjs\\.com|xhsbpza\\.com|union\\.macoms\\.la|newcrbpc\\.com).*"
+            "keywords": "script src=\"?http[s]?:\\/\\/.*(polyfill\\.io|bootcdn\\.net|bootcss\\.com|staticfile\\.net|staticfile\\.org|unionadjs\\.com|xhsbpza\\.com|union\\.macoms\\.la|newcrbpc\\.com).*"
         },
         "check": "keywords.test(responseBody)",
         "severity": "Medium",
@@ -95,11 +95,33 @@ const alertJson = {
     "Possible Detection - CSRF on email change": {
         "variables": {
             "keywords": "/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gm", // email regex,
-            "url_contains": "/change/update/setting/igm",
+            "url_contains": "/change|update|setting/igm",
             "token_not_contains": "/csrf|xsrf|token/igm",
             "password_not_contains": "/pass/"
         },
-        "check": "keywords.test(requestBody) && url_contains.test(requestUrl) && !token_not_contains(requestBody) && !password_not_contains(requestBody)",
+        "check": "keywords.test(requestBody) && url_contains.test(requestUrl) && !token_not_contains.test(requestBody) && !password_not_contains.test(requestBody)",
+        "severity": "High",
+        "include": ["html"]
+    },
+    "Possible Detection - Oauth CSRF (state param missing)": {
+        "variables": {
+            "keywords": "/state=/igm",
+            "url_contains": "/oauth|authorize/igm",
+            "oauth_redirect_uri": "/redirect_uri=/igm",
+            "oauth_response_type": "/response_type=code/igm",
+            "oauth_client_id": "/client_id=/igm",
+        },
+        "check": "url_contains.test(requestUrl) && oauth_redirect_uri.test(requestUrl) && oauth_response_type.test(requestUrl) && oauth_client_id.test(requestUrl) && !keywords.test(requestUrl)",
+        "severity": "Low",
+        "include": ["html"]
+    },
+    "Possible Detection - Oauth Implicit Flow being Utilised": {
+        "variables": {
+            "keywords": "/response_type=(token|access_?-?token)/igm",
+            "url_contains": "oauth|authorize",
+            "oauth_redirect_uri": "redirect_uri=",
+        },
+        "check": "url_contains.test(requestUrl) && oauth_redirect_uri.test(requestUrl) && keywords.test(requestUrl)",
         "severity": "High",
         "include": ["html"]
     },
@@ -254,7 +276,7 @@ const alertJson = {
     // },
     "HASH Disclosure - Argon2i":{
         "variables": {
-            "keywords": "^\\$argon2i\\$v=(?:16|19)\\$m=\\d{1,10},t=\\d{1,10},p=\\d{1,3}(?:,keyid=[A-Za-z0-9+/]{0,11}(?:,data=[A-Za-z0-9+/]{0,43})?)?\\$[A-Za-z0-9+/]{11,64}\\$[A-Za-z0-9+/]{16,86}$" // TODO:
+            "keywords": "^\\$argon2i\\$v=(?:16|19)\\$m=\\d{1,10},t=\\d{1,10},p=\\d{1,3}(?:,keyid=[A-Za-z0-9+/]{0,11}(?:,data=[A-Za-z0-9+/]{0,43})?)?\\$[A-Za-z0-9+/]{11,64}\\$[A-Za-z0-9+/]{16,86}$" // TODO: not working
         },
         "check": "keywords.test(responseBody)",
         "severity": "High",
@@ -262,7 +284,7 @@ const alertJson = {
     },
     "HASH Disclosure - Argon2id":{
         "variables": {
-            "keywords": "^\\$argon2id\\$v=(?:16|19)\\$m=\\d{1,10},t=\\d{1,10},p=\\d{1,3}(?:,keyid=[A-Za-z0-9+/]{0,11}(?:,data=[A-Za-z0-9+/]{0,43})?)?\\$[A-Za-z0-9+/]{11,64}\\$[A-Za-z0-9+/]{16,86}$" // TODO:
+            "keywords": "^\\$argon2id\\$v=(?:16|19)\\$m=\\d{1,10},t=\\d{1,10},p=\\d{1,3}(?:,keyid=[A-Za-z0-9+/]{0,11}(?:,data=[A-Za-z0-9+/]{0,43})?)?\\$[A-Za-z0-9+/]{11,64}\\$[A-Za-z0-9+/]{16,86}$" // TODO: not working  
         },
         "check": "keywords.test(responseBody)",
         "severity": "High",
@@ -270,7 +292,7 @@ const alertJson = {
     },
     "HASH Disclosure - NTLM old":{
         "variables": {
-            "keywords": "\\$3\\$\\$[0-9a-f]{32}"
+            "keywords": "\\$3\\$\\$[0-9a-f]{32}" // TODO: not sure about validity of regex
         },
         "check": "keywords.test(responseBody)",
         "severity": "High",
@@ -278,7 +300,7 @@ const alertJson = {
     },
     "HASH Disclosure - NTLM new":{
         "variables": {
-            "keywords": "\\$NT\\$[0-9a-f]{32}"
+            "keywords": "\\$NT\\$[0-9a-f]{32}" // TODO: not sure about validity of regex
         },
         "check": "keywords.test(responseBody)",
         "severity": "High",
@@ -300,33 +322,34 @@ const alertJson = {
         "severity": "Critical",
         "include": ["html", "js"]
     },
+
     "API Key Disclosure - Slack":{
         "variables": {
-            "keywords": "\\b(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})\\b"
+            "keywords": "\\b(xox[pbar]-[0-9]{10,13}-[0-9]{10,13}-[0-9]{10,13}-[a-z0-9]+)\\b"
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
         "include": ["html", "js"]
     },
-    "API Key Disclosure - Amazon MWS":{
-        "variables": {
-            "keywords": "\\bamzn\\.mws\\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\b"
-        },
-        "check": "keywords.test(responseBody)",
-        "severity": "Critical",
-        "include": ["html", "js"]
-    },
-    "API Key Disclosure - AWS AppSync":{
-        "variables": {
-            "keywords": "x-amz-date|x-amz-security-token|x-amz-target|x-amz-content-sha256|x-amz-decoded-content-length|x-amz-user-agent|x-amz-user-agent-info|x-amz-user-agent-version|x-amz-user-agent-platform|x-amz-user-agent-device|x-amz-user-agent-browser|x-amz-user-agent-os|x-amz-user-agent-cpu|x-amz-user-agent-memory|x-amz-user-agent-storage|x-amz-user-agent-network|x-amz-user-agent-gpu"
-        },
-        "check": "keywords.test(responseBody)",
-        "severity": "Critical",
-        "include": ["html", "js"]
-    },
+    // "API Key Disclosure - Amazon MWS":{
+    //     "variables": {
+    //         "keywords": "\\bamzn\\.mws\\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\b"
+    //     },
+    //     "check": "keywords.test(responseBody)",
+    //     "severity": "Critical",
+    //     "include": ["html", "js"]
+    // },
+    // "API Key Disclosure - AWS AppSync":{
+    //     "variables": {
+    //         "keywords": "x-amz-date|x-amz-security-token|x-amz-target|x-amz-content-sha256|x-amz-decoded-content-length|x-amz-user-agent|x-amz-user-agent-info|x-amz-user-agent-version|x-amz-user-agent-platform|x-amz-user-agent-device|x-amz-user-agent-browser|x-amz-user-agent-os|x-amz-user-agent-cpu|x-amz-user-agent-memory|x-amz-user-agent-storage|x-amz-user-agent-network|x-amz-user-agent-gpu"
+    //     },
+    //     "check": "keywords.test(responseBody)",
+    //     "severity": "Critical",
+    //     "include": ["html", "js"]
+    // },
     "API Key Disclosure - Facebook Access Token":{
         "variables": {
-            "keywords": "\\bEAACEdEose0cBA[0-9A-Za-z]+\\b"
+            "keywords": "\\bEAACEdEose0cBA[0-9A-Za-z]+\\b" // TODO: not sure about validity of regex
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
@@ -334,7 +357,7 @@ const alertJson = {
     },
     "API Key Disclosure - Facebook Oauth Token":{
         "variables": {
-            "keywords": "\\b[fF][aA][cC][eE][bB][oO][oO][kK].{0,20}['|\"][0-9a-f]{32}['|\"]\\b"
+            "keywords": "\\b[fF][aA][cC][eE][bB][oO][oO][kK].{0,20}['|\"][0-9a-f]{32}['|\"]\\b" // TODO: not sure about validity of regex
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
@@ -342,7 +365,7 @@ const alertJson = {
     },
     "API Key Disclosure - Github":{
         "variables": {
-            "keywords": "\\b[gG][iI][tT][hH][uU][bB].{0,20}['|\"][0-9a-zA-Z]{35,40}['|\"]\\b"
+            "keywords": "\\b((?:ghp|gho|ghu|ghs|ghr|github_pat)_[a-zA-Z0-9_]{36,255})\\b"
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
@@ -358,7 +381,7 @@ const alertJson = {
     // },
     "API Key Disclosure - Heroku":{
         "variables": {
-            "keywords": "\\b[hH][eE][rR][oO][kK][uU].{0,20}[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\\b"
+            "keywords": "\\b([0-9Aa-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\\b"
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
@@ -380,25 +403,33 @@ const alertJson = {
         "severity": "Critical",
         "include": ["html", "js"]
     },
-    "API Key Disclosure - Paypal Braintree Access Token":{
+    "API Key Disclosure - Braintree Token":{ 
         "variables": {
-            "keywords": "\\baccess_token\\$production\\$[0-9a-z]{16}\\$[0-9a-f]{32}\\b"
+            "keywords": "\\baccess_token\\$production\\$[0-9a-z]{16}\\$[0-9a-f]{32}\\b" // TODO: require strong regex
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
         "include": ["html", "js"]
     },
-    "API Key Disclosure - Picatic":{
+    // "API Key Disclosure - Picatic":{
+    //     "variables": {
+    //         "keywords": "\\bsk_live_[0-9a-z]{32}\\b"
+    //     },
+    //     "check": "keywords.test(responseBody)",
+    //     "severity": "Critical",
+    //     "include": ["html", "js"]
+    // },
+    "API Key Disclosure - Slack Service Webhook":{ 
         "variables": {
-            "keywords": "\\bsk_live_[0-9a-z]{32}\\b"
+            "keywords": "https:\\/\\/hooks\\.slack\\.com\\/services\\/T[a-zA-Z0-9]+\\/B[a-zA-Z0-9]+\\/[a-zA-Z0-9_]{23,25}"
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
         "include": ["html", "js"]
     },
-    "API Key Disclosure - Slack webhook":{ // TODO: need to improve this
+    "API Key Disclosure - Slack Workflow Webhook":{
         "variables": {
-            "keywords": "https://hooks\\.slack\\.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}"
+            "keywords": "https:\\/\\/hooks\\.slack\\.com\\/workflows\\/T[A-Z0-9]+\\/A[A-Z0-9]+\\/[0-9]{17,19}\\/[A-Za-z0-9]{23,25}"
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
@@ -406,31 +437,7 @@ const alertJson = {
     },
     "API Key Disclosure - Stripe":{
         "variables": {
-            "keywords": "\\bsk_live_[0-9a-z]{24}\\b"
-        },
-        "check": "keywords.test(responseBody)",
-        "severity": "Critical",
-        "include": ["html", "js"]
-    },
-    "API Key Disclosure - Stripe Restricted":{
-        "variables": {
-            "keywords": "\\brk_live_[0-9a-z]{24}\\b"
-        },
-        "check": "keywords.test(responseBody)",
-        "severity": "Critical",
-        "include": ["html", "js"]
-    },
-    "API Key Disclosure - Square Access Token":{
-        "variables": {
-            "keywords": "\\bsq0atp-[0-9A-Za-z\\-_]{22}\\b"
-        },
-        "check": "keywords.test(responseBody)",
-        "severity": "Critical",
-        "include": ["html", "js"]
-    },
-    "API Key Disclosure - Square OAuth Secret":{
-        "variables": {
-            "keywords": "\\bsq0csp-[0-9A-Za-z\\-_]{43}\\b"
+            "keywords": "\\b[rs]k_live_[0-9a-zA-Z]{20,247}\\b"
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
@@ -438,7 +445,7 @@ const alertJson = {
     },
     "API Key Disclosure - Telegram Bot Token":{
         "variables": {
-            "keywords": "\\bT[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}\\b"
+            "keywords": "\\b([0-9]{8,10}:[a-zA-Z0-9_-]{35})\\b"
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
@@ -446,20 +453,20 @@ const alertJson = {
     },
     "API Key Disclosure - Twilio":{
         "variables": {
-            "keywords": "\\bSK[a-zA-Z0-9_]{32}\\b"
+            "keywords": "\\b(SK[a-zA-Z0-9_]{32})|(AC[0-9a-f]{32})\\b"
         },
         "check": "keywords.test(responseBody)",
         "severity": "Critical",
         "include": ["html", "js"]
     },
-    "API Key Disclosure - Github Auth Creds":{
-        "variables": {
-            "keywords": "https:\\/\\/[a-zA-Z0-9]{40}@github\\.com"
-        },
-        "check": "keywords.test(responseBody)",
-        "severity": "Critical",
-        "include": ["html", "js"]
-    },
+    // "API Key Disclosure - Github Auth Creds":{
+    //     "variables": {
+    //         "keywords": "https:\\/\\/[a-zA-Z0-9]{40}@github\\.com"
+    //     },
+    //     "check": "keywords.test(responseBody)",
+    //     "severity": "Critical",
+    //     "include": ["html", "js"]
+    // },
     "API Key Disclosure - AWS":{
         "variables": {
             "keywords": "\\b((?:A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16})\\b"
